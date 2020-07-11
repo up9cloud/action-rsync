@@ -64,12 +64,30 @@ cmd_ssh=$(printf "ssh -i %s %s" "$HOME/.ssh/key" "$SSH_ARGS")
 cmd_rsync=$(printf "rsync %s -e '%s'" "$ARGS" "$cmd_ssh")
 if [ -n "$PRE_SCRIPT" ]; then
     log ========== Pre script starting ==========
-    eval "$cmd_ssh" $USER@$HOST "'""$PRE_SCRIPT""'"
+    eval "$cmd_ssh" $USER@$HOST 'mktemp' > /tmp/target_mktemp_output
+    if [ $? -nq 0 ]; then
+        die "Using \$PRE_SCRIPT, target server must support 'mktemp' command"
+    fi
+    target_pre_file_path=`cat /tmp/target_mktemp_output`
+    local_pre_file_path=`mktemp`
+    echo -e "$PRE_SCRIPT" > $local_pre_file_path
+    eval "$cmd_rsync" $local_pre_file_path $USER@$HOST:$target_pre_file_path
+    eval "$cmd_ssh" $USER@$HOST "sh $target_pre_file_path"
+    eval "$cmd_ssh" $USER@$HOST "rm $target_pre_file_path"
     log ========== Pre script executed ==========
 fi
 eval "$cmd_rsync" $SOURCE $USER@$HOST:$TARGET
 if [ -n "$POST_SCRIPT" ]; then
     log ========== Post script starting ==========
-    eval "$cmd_ssh" $USER@$HOST "'""$POST_SCRIPT""'"
+    eval "$cmd_ssh" $USER@$HOST 'mktemp' > /tmp/target_mktemp_output
+    if [ $? -nq 0 ]; then
+        die "Using \$POST_SCRIPT, target server must support 'mktemp' command"
+    fi
+    target_post_file_path=`cat /tmp/target_mktemp_output`
+    local_post_file_path=`mktemp`
+    echo -e "$POST_SCRIPT" > $local_post_file_path
+    eval "$cmd_rsync" $local_post_file_path $USER@$HOST:$target_post_file_path
+    eval "$cmd_ssh" $USER@$HOST "sh $target_post_file_path"
+    eval "$cmd_ssh" $USER@$HOST "rm $target_post_file_path"
     log ========== Post script executed ==========
 fi
