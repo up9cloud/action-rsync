@@ -59,6 +59,10 @@ mkdir -p "$HOME/.ssh"
 echo "$KEY" > "$HOME/.ssh/key"
 chmod 600 "$HOME/.ssh/key"
 
+if [ -n "$GITHUB_WORKSPACE"  ]; then
+    cd $GITHUB_WORKSPACE
+fi
+
 # Execute
 cmd_ssh=$(printf "ssh -i %s %s" "$HOME/.ssh/key" "$SSH_ARGS")
 cmd_rsync=$(printf "rsync %s -e '%s'" "$ARGS" "$cmd_ssh")
