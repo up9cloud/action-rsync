@@ -5,6 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     name: A job for testing
     steps:
+    - uses: actions/checkout@v2
     - name: Sync
       id: rsync
       uses: up9cloud/action-rsync@master
