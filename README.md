@@ -19,7 +19,7 @@ jobs:
     # Must checkout first, otherwise would get empty folder, see https://github.com/actions/checkout
     - uses: actions/checkout@v2
     - name: Deploy to my ❤️
-      uses: up9cloud/action-rsync@v1.0.0
+      uses: up9cloud/action-rsync@master
       env:
         # Required
         HOST: example.com
@@ -47,7 +47,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Deploy to my ❤️
-      uses: up9cloud/action-rsync@v1.0.0
+      uses: up9cloud/action-rsync@master
       env:
         HOST: example.com
         KEY: ${{secrets.DEPLOY_SSH_KEY}}
@@ -63,3 +63,5 @@ jobs:
         PRE_SCRIPT: "echo start at: \n date -u --rfc-3339=ns"
         POST_SCRIPT: "echo done at: && date -u --rfc-3339=ns"
 ```
+
+> See 1 more example: https://github.com/up9cloud/action-rsync/blob/master/.github/workflows/main.yml
