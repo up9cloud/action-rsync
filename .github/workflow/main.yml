@@ -1,0 +1,17 @@
+on: [push]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: A job for testing
+    steps:
+    - name: Sync
+      id: rsync
+      uses: actions/action-rsync@v1
+      env:
+        HOST: ${{secrets.DEPLOY_HOST}}
+        KEY: ${{secrets.DEPLOY_SSH_KEY}}
+        TARGET: /tmp/action-rsync/
+        VERBOSE: true
+        PRE_SCRIPT: Server time (Start): `date -u --rfc-3339=ns`
+        POST_SCRIPT: ls -al /tmp/action-rsync && Server time (Done): `date -u --rfc-3339=ns`
