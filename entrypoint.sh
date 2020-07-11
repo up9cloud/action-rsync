@@ -43,7 +43,7 @@ if [ -z "$SOURCE" ]; then
 fi
 
 if [ -z "$ARGS" ]; then
-    ARGS="-azv --delete"
+    ARGS="-azv --delete --exclude=/.git/"
     log "\$ARGS not specified, using default rsync arguments '$ARGS'."
 fi
 
