@@ -72,9 +72,11 @@ if [ -n "$PRE_SCRIPT" ]; then
     local_pre_file_path=`mktemp`
     echo -e "$PRE_SCRIPT" > $local_pre_file_path
     eval "$cmd_rsync" $local_pre_file_path $USER@$HOST:$target_pre_file_path
+    log ========== Pre script sent ==========
     eval "$cmd_ssh" $USER@$HOST "sh $target_pre_file_path"
-    eval "$cmd_ssh" $USER@$HOST "rm $target_pre_file_path"
     log ========== Pre script executed ==========
+    eval "$cmd_ssh" $USER@$HOST "rm $target_pre_file_path"
+    log ========== Pre script removed ==========
 fi
 eval "$cmd_rsync" $SOURCE $USER@$HOST:$TARGET
 if [ -n "$POST_SCRIPT" ]; then
@@ -87,7 +89,9 @@ if [ -n "$POST_SCRIPT" ]; then
     local_post_file_path=`mktemp`
     echo -e "$POST_SCRIPT" > $local_post_file_path
     eval "$cmd_rsync" $local_post_file_path $USER@$HOST:$target_post_file_path
+    log ========== Post script sent ==========
     eval "$cmd_ssh" $USER@$HOST "sh $target_post_file_path"
-    eval "$cmd_ssh" $USER@$HOST "rm $target_post_file_path"
     log ========== Post script executed ==========
+    eval "$cmd_ssh" $USER@$HOST "rm $target_post_file_path"
+    log ========== Post script removed ==========
 fi
