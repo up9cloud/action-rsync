@@ -65,6 +65,7 @@ fi
 
 # Execute
 cmd_ssh=$(printf "ssh -i %s %s" "$HOME/.ssh/key" "$SSH_ARGS")
+cmd_rsync_script=$(printf "rsync -avz -e '%s'" "$cmd_ssh")
 cmd_rsync=$(printf "rsync %s -e '%s'" "$ARGS" "$cmd_ssh")
 if [ -n "$PRE_SCRIPT" ]; then
     log ========== Pre script starting ==========
@@ -75,7 +76,7 @@ if [ -n "$PRE_SCRIPT" ]; then
     target_pre_file_path=`cat /tmp/target_mktemp_output`
     local_pre_file_path=`mktemp`
     echo -e "$PRE_SCRIPT" > $local_pre_file_path
-    eval "$cmd_rsync" $local_pre_file_path $USER@$HOST:$target_pre_file_path
+    eval "$cmd_rsync_script" $local_pre_file_path $USER@$HOST:$target_pre_file_path
     log ========== Pre script sent ==========
     eval "$cmd_ssh" $USER@$HOST "sh $target_pre_file_path"
     log ========== Pre script executed ==========
@@ -92,7 +93,7 @@ if [ -n "$POST_SCRIPT" ]; then
     target_post_file_path=`cat /tmp/target_mktemp_output`
     local_post_file_path=`mktemp`
     echo -e "$POST_SCRIPT" > $local_post_file_path
-    eval "$cmd_rsync" $local_post_file_path $USER@$HOST:$target_post_file_path
+    eval "$cmd_rsync_script" $local_post_file_path $USER@$HOST:$target_post_file_path
     log ========== Post script sent ==========
     eval "$cmd_ssh" $USER@$HOST "sh $target_post_file_path"
     log ========== Post script executed ==========
