@@ -1,0 +1,9 @@
+# action.yml
+name: 'Docker container action - rsync'
+description: 'Alpine based image with rsync, basic pre and post scripts support. Pure docker, minimize github things.'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+branding:
+  icon: 'smile'  
+  color: 'yellow'
