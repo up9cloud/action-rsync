@@ -13,5 +13,5 @@ jobs:
         KEY: ${{secrets.DEPLOY_SSH_KEY}}
         TARGET: /tmp/action-rsync/
         VERBOSE: true
-        PRE_SCRIPT: "Server time (Start): `date -u --rfc-3339=ns`"
+        PRE_SCRIPT: "echo I ❤️ this action!\ndate -u --rfc-3339=ns"
         POST_SCRIPT: "ls -al /tmp/action-rsync && Server time (Done): `date -u --rfc-3339=ns`"
