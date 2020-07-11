@@ -65,7 +65,7 @@ cmd_rsync=$(printf "rsync %s -e '%s'" "$ARGS" "$cmd_ssh")
 if [ -n "$PRE_SCRIPT" ]; then
     log ========== Pre script starting ==========
     eval "$cmd_ssh" $USER@$HOST 'mktemp' > /tmp/target_mktemp_output
-    if [ $? -nq 0 ]; then
+    if [ $? -ne 0 ]; then
         die "Using \$PRE_SCRIPT, target server must support 'mktemp' command"
     fi
     target_pre_file_path=`cat /tmp/target_mktemp_output`
@@ -80,7 +80,7 @@ eval "$cmd_rsync" $SOURCE $USER@$HOST:$TARGET
 if [ -n "$POST_SCRIPT" ]; then
     log ========== Post script starting ==========
     eval "$cmd_ssh" $USER@$HOST 'mktemp' > /tmp/target_mktemp_output
-    if [ $? -nq 0 ]; then
+    if [ $? -ne 0 ]; then
         die "Using \$POST_SCRIPT, target server must support 'mktemp' command"
     fi
     target_post_file_path=`cat /tmp/target_mktemp_output`
