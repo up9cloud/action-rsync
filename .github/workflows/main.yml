@@ -14,4 +14,4 @@ jobs:
         TARGET: /tmp/action-rsync/
         VERBOSE: true
         PRE_SCRIPT: "echo I ❤️ this action!\ndate -u --rfc-3339=ns"
-        POST_SCRIPT: "ls -al /tmp/action-rsync && Server time (Done): `date -u --rfc-3339=ns`"
+        POST_SCRIPT: "ls -al /tmp/action-rsync && date -u --rfc-3339=ns"
