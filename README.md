@@ -19,7 +19,7 @@ jobs:
     # Must checkout first, otherwise would get empty folder, see https://github.com/actions/checkout
     - uses: actions/checkout@v2
     - name: Deploy to my ❤️
-      uses: up9cloud/action-rsync@master
+      uses: up9cloud/action-rsync@v1
       env:
         # Required
         HOST: example.com
@@ -47,7 +47,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Deploy to my ❤️
-      uses: up9cloud/action-rsync@master
+      uses: up9cloud/action-rsync@v1
       env:
         HOST: example.com
         KEY: ${{secrets.DEPLOY_SSH_KEY}}
