@@ -1,18 +1,18 @@
 on: [push]
 
 jobs:
-  deploy:
+  test:
     runs-on: ubuntu-latest
     name: A job for testing
     steps:
     - uses: actions/checkout@v2
-    - name: Sync
-      id: rsync
-      uses: up9cloud/action-rsync@master
+    - uses: up9cloud/action-rsync@master
       env:
         HOST: ${{secrets.DEPLOY_HOST}}
         KEY: ${{secrets.DEPLOY_SSH_KEY}}
         TARGET: /tmp/action-rsync/
         VERBOSE: true
-        PRE_SCRIPT: "echo I ❤️ this action!\ndate -u --rfc-3339=ns"
+        PRE_SCRIPT: |
+          echo I ❤️ this action!
+          date -u --rfc-3339=ns
         POST_SCRIPT: "ls -al /tmp/action-rsync && date -u --rfc-3339=ns"
