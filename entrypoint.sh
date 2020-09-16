@@ -20,7 +20,7 @@ if [ -z "$HOST" ]; then
 fi
 
 if [ -z "$TARGET" ]; then
-    die "Must specify \$TARGET! (target folder)"
+    die "Must specify \$TARGET! (target folder or file, remember to set the SOURCE if you set as a file.)"
 fi
 
 if [ -z "$KEY" ]; then

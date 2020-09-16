@@ -22,10 +22,10 @@ jobs:
       # Set the version you want: https://github.com/marketplace/actions/action-rsync
       uses: up9cloud/action-rsync@master
       env:
-        # Required
+        # Required (with example values)
         HOST: example.com
         KEY: ${{secrets.DEPLOY_SSH_KEY}} # ssh private key
-        TARGET: /target/dir/ # target folder or file
+        TARGET: /target/path/ # target path for folder or file
 
         # Optional (with `default` values)
         VERBOSE: false # set it true if you want some tips
