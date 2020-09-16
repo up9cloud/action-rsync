@@ -53,7 +53,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Deploy to my ❤️
-      uses: up9cloud/action-rsync@v1
+      uses: up9cloud/action-rsync@v1.1
       env:
         HOST: example.com
         KEY: ${{secrets.DEPLOY_SSH_KEY}}
@@ -66,7 +66,9 @@ jobs:
         SSH_ARGS: '-p 2222 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
         SOURCE: ./public/
 
-        PRE_SCRIPT: "echo start at: \n date -u --rfc-3339=ns"
+        PRE_SCRIPT: |
+          echo start at:
+          date -u --rfc-3339=ns
         POST_SCRIPT: "echo done at: && date -u --rfc-3339=ns"
 ```
 
