@@ -19,7 +19,8 @@ jobs:
     # Must checkout first, otherwise would get empty folder, see https://github.com/actions/checkout
     - uses: actions/checkout@v2
     - name: Deploy to my ❤️
-      uses: up9cloud/action-rsync@v1
+      # Set the version you want: https://github.com/marketplace/actions/action-rsync
+      uses: up9cloud/action-rsync@master
       env:
         # Required
         HOST: example.com
@@ -30,7 +31,12 @@ jobs:
         VERBOSE: false # set it true if you want some tips
         USER: root # target server ssh user
         PORT: 22 # target server ssh port
+        # The final rsync arguments will be "$ARGS $ARGS_MORE".
         ARGS: -avz --delete --exclude=/.git/ --exclude=/.github/ # rsync arguments
+        ARGS_MORE: "" # more rsync arguments
+                      # This can be used with default arguments, for example:
+                      # if you set "--no-o --no-g" and keep ARGS as default,
+                      # then the final will be -avz --delete --exclude=/.git/ --exclude=/.github/ --no-o --no-g
         SSH_ARGS: '-p 22 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet' # ssh arguments, if you set this, the PORT would be ignored.
         SOURCE: ./ # source folder or file
         PRE_SCRIPT: "" # pre script runs on target server, target server must support `mktemp` command

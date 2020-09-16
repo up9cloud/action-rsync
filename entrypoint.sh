@@ -47,6 +47,10 @@ if [ -z "$ARGS" ]; then
     log "\$ARGS not specified, using default rsync arguments '$ARGS'."
 fi
 
+if [ ! -z "$ARGS_MORE" ]; then
+    log "\$ARGS_MORE specified, it will append to \$ARGS."
+fi
+
 if [ -z "$SSH_ARGS" ]; then
     SSH_ARGS="-p $PORT -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
     log "\$SSH_ARGS not specified, using default ssh arguments '$SSH_ARGS'."
@@ -66,7 +70,7 @@ fi
 # Execute
 cmd_ssh=$(printf "ssh -i %s %s" "$HOME/.ssh/key" "$SSH_ARGS")
 cmd_rsync_script=$(printf "rsync -avz -e '%s'" "$cmd_ssh")
-cmd_rsync=$(printf "rsync %s -e '%s'" "$ARGS" "$cmd_ssh")
+cmd_rsync=$(printf "rsync %s %s -e '%s'" "$ARGS" "$ARGS_MORE" "$cmd_ssh")
 if [ -n "$PRE_SCRIPT" ]; then
     log ========== Pre script starting ==========
     eval "$cmd_ssh" $USER@$HOST 'mktemp' > /tmp/target_mktemp_output
