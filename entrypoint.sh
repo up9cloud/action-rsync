@@ -174,14 +174,14 @@ run_script() {
 	log "========== $name starting =========="
 	local tmp_output=/tmp/target_mktemp_output
 	if [ "$REAL_RUN_SCRIPT_ON" == "remote" ]; then
-		eval "$cmd_ssh" "$USER@$HOST" 'mktemp' >"$tmp_ouput"
+		eval "$cmd_ssh" "$USER@$HOST" 'mktemp' >"$tmp_output"
 	else
-		mktemp >"$tmp_ouput"
+		mktemp >"$tmp_output"
 	fi
 	if [ $? -ne 0 ]; then
 		die "Run 'mktemp' command failed, make sure $REAL_RUN_SCRIPT_ON server has that command!"
 	fi
-	local dest=$(cat "$tmp_ouput")
+	local dest=$(cat "$tmp_output")
 
 	if [ "$REAL_RUN_SCRIPT_ON" == "remote" ]; then
 		eval "$cmd_rsync_script" "$src" "$USER@$HOST:$dest"
