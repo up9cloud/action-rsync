@@ -7,7 +7,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: up9cloud/action-rsync@master
-        name: PUSH (default), local (SOURCE) to remote (TARGET)
+        name: |
+          Mode: push, local (SOURCE) to remote (TARGET), run scripts on remote (TARGET)
         env:
           HOST: ${{secrets.DEPLOY_HOST}}
           KEY: ${{secrets.DEPLOY_SSH_KEY}}
@@ -17,9 +18,10 @@ jobs:
             echo I ❤️ this action!
             rm -fr /tmp/action-rsync
             date -u
-          POST_SCRIPT: "ls -al /tmp/action-rsync && date -u"
+          POST_SCRIPT: "ls /tmp/action-rsync && date -u"
       - uses: up9cloud/action-rsync@master
-        name: PUSH, run scripts at local (SOURCE)
+        name: |
+          Mode: push, local (SOURCE) to remote (TARGET), run scripts at local (SOURCE)
         env:
           HOST: ${{secrets.DEPLOY_HOST}}
           KEY: ${{secrets.DEPLOY_SSH_KEY}}
@@ -33,7 +35,8 @@ jobs:
             date -u
           POST_SCRIPT: "if ls /tmp/action-rsync; then exit 2; fi && date -u"
       - uses: up9cloud/action-rsync@master
-        name: PULL, remote (SOURCE) to local (TARGET)
+        name: |
+          Mode: pull, remote (SOURCE) to local (TARGET), run scripts at local (TARGET)
         env:
           MODE: pull
           HOST: ${{secrets.DEPLOY_HOST}}
@@ -42,11 +45,14 @@ jobs:
           TARGET: /tmp/action-rsync/.profile
           VERBOSE: true
           PRE_SCRIPT: |
-            rm -fr /tmp/action-rsync
+            if ls /tmp/action-rsync; then
+              exit 2
+            fi
             date -u
           POST_SCRIPT: "cat /tmp/action-rsync/.profile && date -u"
       - uses: up9cloud/action-rsync@master
-        name: PULL, remote (SOURCE) to local (TARGET)
+        name: |
+          Mode: pull, remote (SOURCE) to local (TARGET), run scripts on remote (SOURCE)
         env:
           MODE: pull
           HOST: ${{secrets.DEPLOY_HOST}}
@@ -58,7 +64,7 @@ jobs:
           PRE_SCRIPT: |
             rm -fr /tmp/action-rsync
             date -u
-          POST_SCRIPT: "cat /tmp/action-rsync/.profile && date -u"
+          POST_SCRIPT: "if ls /tmp/action-rsync; then exit 2; fi && date -u"
       - uses: up9cloud/action-rsync@master
         name: LOCAL, local (SOURCE) to local (TARGET)
         env:
@@ -66,7 +72,8 @@ jobs:
           TARGET: /tmp/action-rsync/
           VERBOSE: true
           PRE_SCRIPT: |
-            echo Always runs on local!
-            rm -fr /tmp/action-rsync
+            if ls /tmp/action-rsync; then
+              exit 2
+            fi
             date -u
-          POST_SCRIPT: "ls -al /tmp/action-rsync && date -u"
+          POST_SCRIPT: "ls /tmp/action-rsync && date -u"
