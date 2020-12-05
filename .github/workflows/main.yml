@@ -16,8 +16,8 @@ jobs:
           PRE_SCRIPT: |
             echo I ❤️ this action!
             rm -fr /tmp/action-rsync
-            date -u --rfc-3339=ns
-          POST_SCRIPT: "ls -al /tmp/action-rsync && date -u --rfc-3339=ns"
+            date -u
+          POST_SCRIPT: "ls -al /tmp/action-rsync && date -u"
       - uses: up9cloud/action-rsync@master
         name: PUSH, run scripts at local (SOURCE)
         env:
@@ -30,8 +30,8 @@ jobs:
             if ls /tmp/action-rsync; then
               exit 2
             fi
-            date -u --rfc-3339=ns
-          POST_SCRIPT: "if ls /tmp/action-rsync; then exit 2; fi && date -u --rfc-3339=ns"
+            date -u
+          POST_SCRIPT: "if ls /tmp/action-rsync; then exit 2; fi && date -u"
       - uses: up9cloud/action-rsync@master
         name: PULL, remote (SOURCE) to local (TARGET)
         env:
@@ -44,8 +44,8 @@ jobs:
           PRE_SCRIPT: |
             echo Runs on local!
             rm -fr /tmp/action-rsync
-            date -u --rfc-3339=ns
-          POST_SCRIPT: "ls -al /tmp/action-rsync && date -u --rfc-3339=ns"
+            date -u
+          POST_SCRIPT: "ls -al /tmp/action-rsync && date -u"
       - uses: up9cloud/action-rsync@master
         name: PULL, remote (SOURCE) to local (TARGET)
         env:
@@ -59,8 +59,8 @@ jobs:
           PRE_SCRIPT: |
             echo Runs on remote!
             rm -fr /tmp/action-rsync
-            date -u --rfc-3339=ns
-          POST_SCRIPT: "ls -al /tmp/action-rsync && date -u --rfc-3339=ns"
+            date -u
+          POST_SCRIPT: "ls -al /tmp/action-rsync && date -u"
       - uses: up9cloud/action-rsync@master
         name: LOCAL, local (SOURCE) to local (TARGET)
         env:
@@ -70,5 +70,5 @@ jobs:
           PRE_SCRIPT: |
             echo Runs always on local!
             rm -fr /tmp/action-rsync
-            date -u --rfc-3339=ns
-          POST_SCRIPT: "ls -al /tmp/action-rsync && date -u --rfc-3339=ns"
+            date -u
+          POST_SCRIPT: "ls -al /tmp/action-rsync && date -u"
