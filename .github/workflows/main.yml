@@ -38,29 +38,27 @@ jobs:
           MODE: pull
           HOST: ${{secrets.DEPLOY_HOST}}
           KEY: ${{secrets.DEPLOY_SSH_KEY}}
-          SOURCE: /
-          TARGET: /tmp/action-rsync/
+          SOURCE: /root/.profile
+          TARGET: /tmp/action-rsync/.profile
           VERBOSE: true
           PRE_SCRIPT: |
-            echo Runs on local!
             rm -fr /tmp/action-rsync
             date -u
-          POST_SCRIPT: "ls -al /tmp/action-rsync && date -u"
+          POST_SCRIPT: "cat /tmp/action-rsync/.profile && date -u"
       - uses: up9cloud/action-rsync@master
         name: PULL, remote (SOURCE) to local (TARGET)
         env:
           MODE: pull
           HOST: ${{secrets.DEPLOY_HOST}}
           KEY: ${{secrets.DEPLOY_SSH_KEY}}
-          SOURCE: /
-          TARGET: /tmp/action-rsync/
+          SOURCE: /root/.profile
+          TARGET: /tmp/action-rsync/.profile
           VERBOSE: true
           RUN_SCRIPT_ON: source
           PRE_SCRIPT: |
-            echo Runs on remote!
             rm -fr /tmp/action-rsync
             date -u
-          POST_SCRIPT: "ls -al /tmp/action-rsync && date -u"
+          POST_SCRIPT: "cat /tmp/action-rsync/.profile && date -u"
       - uses: up9cloud/action-rsync@master
         name: LOCAL, local (SOURCE) to local (TARGET)
         env:
@@ -68,7 +66,7 @@ jobs:
           TARGET: /tmp/action-rsync/
           VERBOSE: true
           PRE_SCRIPT: |
-            echo Runs always on local!
+            echo Always runs on local!
             rm -fr /tmp/action-rsync
             date -u
           POST_SCRIPT: "ls -al /tmp/action-rsync && date -u"
