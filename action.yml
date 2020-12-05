@@ -1,9 +1,9 @@
 # action.yml
-name: 'Action - rsync'
-description: 'Alpine based image with installed rsync, basic pre and post scripts support. Pure docker, minimize github things.'
+name: "Action - rsync"
+description: "Alpine based image with pre-installed rsync, basic pre and post scripts support. Pure docker, minimize github things."
 runs:
-  using: 'docker'
-  image: 'Dockerfile'
+  using: "docker"
+  image: "Dockerfile"
 branding:
-  icon: 'star'  
-  color: 'yellow'
+  icon: "star"
+  color: "yellow"

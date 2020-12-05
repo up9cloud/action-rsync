@@ -2,105 +2,226 @@
 set -e
 
 function log() {
-    if [ "$VERBOSE" == "true" ]; then
-        echo [action-rsync] "$@"
-    fi
+	if [ "$VERBOSE" == "true" ]; then
+		echo [action-rsync] "$@"
+	fi
 }
 function die() {
-    echo [action-rsync] "$@" 1>&2
-    exit 1
+	echo [action-rsync] "$@" 1>&2
+	exit 1
 }
 
 if [ -z "$VERBOSE" ]; then
-    VERBOSE=false
+	VERBOSE=false
+fi
+
+if [ -z "$MODE" ]; then
+	MODE=push
+else
+	MODE=$(echo "$MODE" | tr '[:upper:]' '[:lower:]')
+
+	case "$MODE" in
+	push | pull | local) ;;
+	*)
+		die "Invalid \$MODE. Must be one of [push, pull, local]"
+		;;
+	esac
 fi
 
 if [ -z "$HOST" ]; then
-    die "Must specify \$HOST! (target host)"
+	case "$MODE" in
+	push | pull) ;;
+	*)
+		die "Must specify \$HOST! (Remote host)"
+		;;
+	esac
 fi
 
 if [ -z "$TARGET" ]; then
-    die "Must specify \$TARGET! (target folder or file, remember to set the SOURCE if you set as a file.)"
+	die "Must specify \$TARGET! (Target folder or file. If you set it as a file, must set \$SOURCE as file too.)"
 fi
 
 if [ -z "$KEY" ]; then
-    die "Must provide \$KEY! (ssh private key)"
+	case "$MODE" in
+	push | pull) ;;
+	*)
+		die "Must provide \$KEY! (ssh private key)"
+		;;
+	esac
 fi
 
 if [ -z "$USER" ]; then
-    USER="root"
-    log "\$USER not specified, using default user '$USER'."
+	USER="root"
+	case "$MODE" in
+	push | pull) ;;
+	*)
+		log "\$USER not specified, using default: '$USER'."
+		;;
+	esac
 fi
 
 if [ -z "$PORT" ]; then
-    PORT="22"
-    log "\$PORT not specified, using default port $PORT."
+	PORT="22"
+	case "$MODE" in
+	push | pull) ;;
+	*)
+		log "\$PORT not specified, using default: $PORT."
+		;;
+	esac
 fi
 
 if [ -z "$SOURCE" ]; then
-    SOURCE="./"
-    log "\$SOURCE not specified, using default source folder '$SOURCE'."
+	SOURCE="./"
+	log "\$SOURCE not specified, using default folder: '$SOURCE'."
 fi
 
 if [ -z "$ARGS" ]; then
-    ARGS="-azv --delete --exclude=/.git/ --exclude=/.github/"
-    log "\$ARGS not specified, using default rsync arguments '$ARGS'."
+	ARGS="-azv --delete --exclude=/.git/ --exclude=/.github/"
+	log "\$ARGS not specified, using default rsync arguments: '$ARGS'."
 fi
 
 if [ ! -z "$ARGS_MORE" ]; then
-    log "\$ARGS_MORE specified, it will append to \$ARGS."
+	log "\$ARGS_MORE specified, will append to \$ARGS."
 fi
 
 if [ -z "$SSH_ARGS" ]; then
-    SSH_ARGS="-p $PORT -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
-    log "\$SSH_ARGS not specified, using default ssh arguments '$SSH_ARGS'."
+	SSH_ARGS="-p $PORT -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
+	case "$MODE" in
+	push | pull) ;;
+	*)
+		log "\$SSH_ARGS not specified, using default: '$SSH_ARGS'."
+		;;
+	esac
 else
-    log "You spcified \$SSH_ARGS, so \$PORT will be ignored."
+	log "You spcified \$SSH_ARGS, so \$PORT will be ignored."
 fi
+
+if [ -z "$RUN_SCRIPT_ON" ]; then
+	RUN_SCRIPT_ON=target
+	log "\$RUN_SCRIPT_ON not specified, using default: '$RUN_SCRIPT_ON'"
+else
+	RUN_SCRIPT_ON=$(echo "$RUN_SCRIPT_ON" | tr '[:upper:]' '[:lower:]')
+fi
+
+case "$RUN_SCRIPT_ON" in
+local)
+	REAL_RUN_SCRIPT_ON="$RUN_SCRIPT_ON"
+	;;
+remote)
+	REAL_RUN_SCRIPT_ON="$RUN_SCRIPT_ON"
+	if [ "$MODE" == "local" ]; then
+		die "It's meaningless, you want run scripts on remote but \$MODE is local?"
+	fi
+	;;
+source)
+	if [ "$MODE" == "local" ]; then
+		REAL_RUN_SCRIPT_ON=local
+	elif [ "$MODE" == "push" ]; then
+		REAL_RUN_SCRIPT_ON=local
+	else
+		REAL_RUN_SCRIPT_ON=remote
+	fi
+	;;
+target)
+	if [ "$MODE" == "local" ]; then
+		REAL_RUN_SCRIPT_ON=local
+	elif [ "$MODE" == "push" ]; then
+		REAL_RUN_SCRIPT_ON=remote
+	else
+		REAL_RUN_SCRIPT_ON=local
+	fi
+	;;
+*)
+	die "Invalid \$RUN_SCRIPT_ON, must be one of [local, remote, source, target]"
+	;;
+esac
 
 # Prepare
-mkdir -p "$HOME/.ssh"
-echo "$KEY" > "$HOME/.ssh/key"
-chmod 600 "$HOME/.ssh/key"
+case "$MODE" in
+push | pull)
+	mkdir -p "$HOME/.ssh"
+	echo "$KEY" >"$HOME/.ssh/key"
+	chmod 600 "$HOME/.ssh/key"
+	;;
+esac
 
-if [ -n "$GITHUB_WORKSPACE"  ]; then
-    cd $GITHUB_WORKSPACE
+if [ -n "$GITHUB_WORKSPACE" ]; then
+	cd $GITHUB_WORKSPACE
 fi
+
+cmd_ssh=$(printf "ssh -i %s %s" "$HOME/.ssh/key" "$SSH_ARGS")
+case "$MODE" in
+push | pull)
+	cmd_rsync=$(printf "rsync %s %s -e '%s'" "$ARGS" "$ARGS_MORE" "$cmd_ssh")
+	;;
+local)
+	cmd_rsync=$(printf "rsync %s %s" "$ARGS" "$ARGS_MORE")
+	;;
+esac
+case "$REAL_RUN_SCRIPT_ON" in
+local)
+	cmd_rsync_script=$(printf "rsync -av")
+	;;
+remote)
+	cmd_rsync_script=$(printf "rsync -avz -e '%s'" "$cmd_ssh")
+	;;
+esac
+
+run_script() {
+	local name="$1"
+	local src="$2"
+
+	log "========== $name starting =========="
+	local tmp_output=/tmp/target_mktemp_output
+	if [ "$REAL_RUN_SCRIPT_ON" == "remote" ]; then
+		eval "$cmd_ssh" "$USER@$HOST" 'mktemp' >"$tmp_ouput"
+	else
+		mktemp >"$tmp_ouput"
+	fi
+	if [ $? -ne 0 ]; then
+		die "Run 'mktemp' command failed, make sure $REAL_RUN_SCRIPT_ON server has that command!"
+	fi
+	local dest=$(cat "$tmp_ouput")
+
+	if [ "$REAL_RUN_SCRIPT_ON" == "remote" ]; then
+		eval "$cmd_rsync_script" "$src" "$USER@$HOST:$dest"
+	else
+		eval "$cmd_rsync_script" "$src" "$dest"
+	fi
+	log "========== $name sent =========="
+	if [ "$REAL_RUN_SCRIPT_ON" == "remote" ]; then
+		eval "$cmd_ssh" "$USER@$HOST" "sh $dest"
+	else
+		sh "$dest"
+	fi
+	log "========== $name executed =========="
+	if [ "$REAL_RUN_SCRIPT_ON" == "remote" ]; then
+		eval "$cmd_ssh" "$USER@$HOST" "rm $dest"
+	else
+		rm "$dest"
+	fi
+	log "========== $name removed =========="
+}
 
 # Execute
-cmd_ssh=$(printf "ssh -i %s %s" "$HOME/.ssh/key" "$SSH_ARGS")
-cmd_rsync_script=$(printf "rsync -avz -e '%s'" "$cmd_ssh")
-cmd_rsync=$(printf "rsync %s %s -e '%s'" "$ARGS" "$ARGS_MORE" "$cmd_ssh")
 if [ -n "$PRE_SCRIPT" ]; then
-    log ========== Pre script starting ==========
-    eval "$cmd_ssh" $USER@$HOST 'mktemp' > /tmp/target_mktemp_output
-    if [ $? -ne 0 ]; then
-        die "Using \$PRE_SCRIPT, target server must support 'mktemp' command"
-    fi
-    target_pre_file_path=`cat /tmp/target_mktemp_output`
-    local_pre_file_path=`mktemp`
-    echo -e "$PRE_SCRIPT" > $local_pre_file_path
-    eval "$cmd_rsync_script" $local_pre_file_path $USER@$HOST:$target_pre_file_path
-    log ========== Pre script sent ==========
-    eval "$cmd_ssh" $USER@$HOST "sh $target_pre_file_path"
-    log ========== Pre script executed ==========
-    eval "$cmd_ssh" $USER@$HOST "rm $target_pre_file_path"
-    log ========== Pre script removed ==========
+	pre_src=$(mktemp)
+	echo -e "$PRE_SCRIPT" >"$pre_src"
+	run_script "Pre script" "$pre_src"
 fi
-eval "$cmd_rsync" $SOURCE $USER@$HOST:$TARGET
+case "$MODE" in
+push)
+	eval "$cmd_rsync" "$SOURCE" "$USER@$HOST:$TARGET"
+	;;
+pull)
+	eval "$cmd_rsync" "$USER@$HOST:$SOURCE" "$TARGET"
+	;;
+local)
+	eval "$cmd_rsync" "$SOURCE" "$TARGET"
+	;;
+esac
 if [ -n "$POST_SCRIPT" ]; then
-    log ========== Post script starting ==========
-    eval "$cmd_ssh" $USER@$HOST 'mktemp' > /tmp/target_mktemp_output
-    if [ $? -ne 0 ]; then
-        die "Using \$POST_SCRIPT, target server must support 'mktemp' command"
-    fi
-    target_post_file_path=`cat /tmp/target_mktemp_output`
-    local_post_file_path=`mktemp`
-    echo -e "$POST_SCRIPT" > $local_post_file_path
-    eval "$cmd_rsync_script" $local_post_file_path $USER@$HOST:$target_post_file_path
-    log ========== Post script sent ==========
-    eval "$cmd_ssh" $USER@$HOST "sh $target_post_file_path"
-    log ========== Post script executed ==========
-    eval "$cmd_ssh" $USER@$HOST "rm $target_post_file_path"
-    log ========== Post script removed ==========
+	post_src=$(mktemp)
+	echo -e "$POST_SCRIPT" >"$post_src"
+	run_script "Post script" "$post_src"
 fi

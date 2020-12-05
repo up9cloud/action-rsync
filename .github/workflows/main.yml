@@ -5,14 +5,70 @@ jobs:
     runs-on: ubuntu-latest
     name: A job for testing
     steps:
-    - uses: actions/checkout@v2
-    - uses: up9cloud/action-rsync@master
-      env:
-        HOST: ${{secrets.DEPLOY_HOST}}
-        KEY: ${{secrets.DEPLOY_SSH_KEY}}
-        TARGET: /tmp/action-rsync/
-        VERBOSE: true
-        PRE_SCRIPT: |
-          echo I ❤️ this action!
-          date -u --rfc-3339=ns
-        POST_SCRIPT: "ls -al /tmp/action-rsync && date -u --rfc-3339=ns"
+      - uses: actions/checkout@v2
+      - uses: up9cloud/action-rsync@master
+        name: PUSH (default), local (SOURCE) to remote (TARGET)
+        env:
+          HOST: ${{secrets.DEPLOY_HOST}}
+          KEY: ${{secrets.DEPLOY_SSH_KEY}}
+          TARGET: /tmp/action-rsync/
+          VERBOSE: true
+          PRE_SCRIPT: |
+            echo I ❤️ this action!
+            rm -fr /tmp/action-rsync
+            date -u --rfc-3339=ns
+          POST_SCRIPT: "ls -al /tmp/action-rsync && date -u --rfc-3339=ns"
+      - uses: up9cloud/action-rsync@master
+        name: PUSH, run scripts at local (SOURCE)
+        env:
+          HOST: ${{secrets.DEPLOY_HOST}}
+          KEY: ${{secrets.DEPLOY_SSH_KEY}}
+          TARGET: /tmp/action-rsync/
+          VERBOSE: true
+          RUN_SCRIPT_ON: local
+          PRE_SCRIPT: |
+            if ls /tmp/action-rsync; then
+              exit 2
+            fi
+            date -u --rfc-3339=ns
+          POST_SCRIPT: "if ls /tmp/action-rsync; then exit 2; fi && date -u --rfc-3339=ns"
+      - uses: up9cloud/action-rsync@master
+        name: PULL, remote (SOURCE) to local (TARGET)
+        env:
+          MODE: pull
+          HOST: ${{secrets.DEPLOY_HOST}}
+          KEY: ${{secrets.DEPLOY_SSH_KEY}}
+          SOURCE: /
+          TARGET: /tmp/action-rsync/
+          VERBOSE: true
+          PRE_SCRIPT: |
+            echo Runs on local!
+            rm -fr /tmp/action-rsync
+            date -u --rfc-3339=ns
+          POST_SCRIPT: "ls -al /tmp/action-rsync && date -u --rfc-3339=ns"
+      - uses: up9cloud/action-rsync@master
+        name: PULL, remote (SOURCE) to local (TARGET)
+        env:
+          MODE: pull
+          HOST: ${{secrets.DEPLOY_HOST}}
+          KEY: ${{secrets.DEPLOY_SSH_KEY}}
+          SOURCE: /
+          TARGET: /tmp/action-rsync/
+          VERBOSE: true
+          RUN_SCRIPT_ON: source
+          PRE_SCRIPT: |
+            echo Runs on remote!
+            rm -fr /tmp/action-rsync
+            date -u --rfc-3339=ns
+          POST_SCRIPT: "ls -al /tmp/action-rsync && date -u --rfc-3339=ns"
+      - uses: up9cloud/action-rsync@master
+        name: LOCAL, local (SOURCE) to local (TARGET)
+        env:
+          MODE: local
+          TARGET: /tmp/action-rsync/
+          VERBOSE: true
+          PRE_SCRIPT: |
+            echo Runs always on local!
+            rm -fr /tmp/action-rsync
+            date -u --rfc-3339=ns
+          POST_SCRIPT: "ls -al /tmp/action-rsync && date -u --rfc-3339=ns"
