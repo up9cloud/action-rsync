@@ -30,8 +30,7 @@ fi
 
 if [ -z "$HOST" ]; then
 	case "$MODE" in
-	push | pull) ;;
-	*)
+	push | pull)
 		die "Must specify \$HOST! (Remote host)"
 		;;
 	esac
@@ -43,8 +42,7 @@ fi
 
 if [ -z "$KEY" ]; then
 	case "$MODE" in
-	push | pull) ;;
-	*)
+	push | pull)
 		die "Must provide \$KEY! (ssh private key)"
 		;;
 	esac
@@ -53,8 +51,7 @@ fi
 if [ -z "$USER" ]; then
 	USER="root"
 	case "$MODE" in
-	push | pull) ;;
-	*)
+	push | pull)
 		log "\$USER not specified, using default: '$USER'."
 		;;
 	esac
@@ -63,8 +60,7 @@ fi
 if [ -z "$PORT" ]; then
 	PORT="22"
 	case "$MODE" in
-	push | pull) ;;
-	*)
+	push | pull)
 		log "\$PORT not specified, using default: $PORT."
 		;;
 	esac
@@ -87,8 +83,7 @@ fi
 if [ -z "$SSH_ARGS" ]; then
 	SSH_ARGS="-p $PORT -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 	case "$MODE" in
-	push | pull) ;;
-	*)
+	push | pull)
 		log "\$SSH_ARGS not specified, using default: '$SSH_ARGS'."
 		;;
 	esac

@@ -1,4 +1,4 @@
-# action-rsync
+# action-rsync ![.github/workflows/main.yml](https://github.com/up9cloud/action-rsync/workflows/.github/workflows/main.yml/badge.svg)
 
 - Alpine based image with pre-installed rsync.
 - Basic pre and post scripts support.
