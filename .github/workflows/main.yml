@@ -12,13 +12,13 @@ jobs:
         env:
           HOST: ${{secrets.DEPLOY_HOST}}
           KEY: ${{secrets.DEPLOY_SSH_KEY}}
-          TARGET: /tmp/action-rsync/
+          TARGET: /tmp/action-rsync_push/
           VERBOSE: true
           PRE_SCRIPT: |
             echo I ❤️ this action!
-            rm -fr /tmp/action-rsync
+            rm -fr /tmp/action-rsync_push
             date -u
-          POST_SCRIPT: "ls /tmp/action-rsync && date -u"
+          POST_SCRIPT: "ls /tmp/action-rsync_push && date -u"
       - uses: up9cloud/action-rsync@master
         name: |
           Mode: push, local (SOURCE) to remote (TARGET), run scripts at local (SOURCE)
@@ -42,14 +42,14 @@ jobs:
           HOST: ${{secrets.DEPLOY_HOST}}
           KEY: ${{secrets.DEPLOY_SSH_KEY}}
           SOURCE: /root/.profile
-          TARGET: /tmp/action-rsync/.profile
+          TARGET: /tmp/.profile
           VERBOSE: true
           PRE_SCRIPT: |
-            if ls /tmp/action-rsync; then
+            if ls /tmp/.profile; then
               exit 2
             fi
             date -u
-          POST_SCRIPT: "cat /tmp/action-rsync/.profile && date -u"
+          POST_SCRIPT: "cat /tmp/.profile && date -u"
       - uses: up9cloud/action-rsync@master
         name: |
           Mode: pull, remote (SOURCE) to local (TARGET), run scripts on remote (SOURCE)
@@ -58,22 +58,22 @@ jobs:
           HOST: ${{secrets.DEPLOY_HOST}}
           KEY: ${{secrets.DEPLOY_SSH_KEY}}
           SOURCE: /root/.profile
-          TARGET: /tmp/action-rsync/.profile
+          TARGET: /tmp/.profile
           VERBOSE: true
           RUN_SCRIPT_ON: source
           PRE_SCRIPT: |
-            rm -fr /tmp/action-rsync
+            rm -fr /tmp/action-rsync_pull
             date -u
-          POST_SCRIPT: "if ls /tmp/action-rsync; then exit 2; fi && date -u"
+          POST_SCRIPT: "if ls /tmp/action-rsync_pull; then exit 2; fi && date -u"
       - uses: up9cloud/action-rsync@master
         name: LOCAL, local (SOURCE) to local (TARGET)
         env:
           MODE: local
-          TARGET: /tmp/action-rsync/
+          TARGET: /tmp/action-rsync_local/
           VERBOSE: true
           PRE_SCRIPT: |
-            if ls /tmp/action-rsync; then
+            if ls /tmp/action-rsync_local; then
               exit 2
             fi
             date -u
-          POST_SCRIPT: "ls /tmp/action-rsync && date -u"
+          POST_SCRIPT: "ls /tmp/action-rsync_local && date -u"
