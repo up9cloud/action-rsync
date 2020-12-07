@@ -3,7 +3,7 @@ on: [push]
 jobs:
   test:
     runs-on: ubuntu-latest
-    name: A job for testing
+    name: Testing and build
     steps:
       - uses: actions/checkout@v2
       - uses: up9cloud/action-rsync@master
@@ -78,6 +78,14 @@ jobs:
             fi
             date -u
           POST_SCRIPT: "ls /tmp/action-rsync_local && date -u"
+      - name: Push to Docker Hub
+        uses: docker/build-push-action@v1
+        if: ${{ github.event_name == 'push' && success() }}
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: sstc/action-rsync
+          tag_with_ref: true
       - name: Notify telegram
         uses: up9cloud/action-notify@master
         if: cancelled() == false
