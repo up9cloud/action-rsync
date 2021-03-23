@@ -39,48 +39,51 @@ docker run -it --rm \
 ## ENV
 
 - `HOST`: Remote server ssh hostname or ip address
-  - `Required only if` MODE is push or pull
+  - **Required only if** MODE is push or pull
 - `USER`: Remote server ssh user
-  - Default value: `root`
+  - *Default value*: `root`
   - It's useless when MODE is local
 - `PORT`: Remote server ssh port
-  - Default value: `22`
+  - *Default value*: `22`
   - It's useless when MODE is local
 - `KEY`: The ssh private key
-  - `Required only if` MODE is push or pull
+  - **Required only if** MODE is push or pull
 - `SOURCE`: Source path for folder or file
-  - Default value: `./`
+  - *Default value*: `./`
 - `TARGET`: Target path for folder or file
-  - `Required`
+  - **Required**
 - `MODE`:
-  - Default value: `push`
+  - *Default value*: `push`
   - Must be one of:
     - `push`: local (SOURCE) to remote (TARGET)
     - `pull`: remote (SOURCE) to local (TARGET)
     - `local`: local (SOURCE) to local (TARGET)
 - `VERBOSE`:
-  - Default value: `false`
+  - *Default value*: `false`
   - Set it to `true` when you need some tips
 - `ARGS`: Arguments for rsync
-  - Default value: `-avz --delete --exclude=/.git/ --exclude=/.github/`
+  - *Default value*: `-avz --delete --exclude=/.git/ --exclude=/.github/`
 - `ARGS_MORE`: More rsync arguments
+  - *Default value*:
   - It means the final rsync arguments will be: `$ARGS $ARGS_MORE`
   - For example, if you set ARGS_MORE to `--no-o --no-g` and keep ARGS as default
   - the final full args will be: `-avz --delete --exclude=/.git/ --exclude=/.github/ --no-o --no-g`
 - `SSH_ARGS`: Arguments for ssh
-  - Default value: `-p 22 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet`
+  - *Default value*: `-p 22 -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet`
   - `-p` value is dynamic, it would be changed when you set PORT
   - But what if you set SSH_ARGS, the PORT would be ignored
 - `RUN_SCRIPT_ON`:
-  - Default value: `target`
+  - *Default value*: `target`
   - Must be one of:
     - `target`: When MODE is `push`, run pre and post scripts on remote. When MODE is others, run on local.
     - `source`: When MODE is `push`, run pre and post scripts on local. When MODE is others, run on remote.
     - `local`: Always run scripts on local.
     - `remote`: Always run scripts on remote.
 - `PRE_SCRIPT`: The script runs before rsync
+  - *Default value*:
   - The target system of RUN_SCRIPT_ON must support `mktemp` command
 - `POST_SCRIPT`: The script runs after rsync
+  - *Default value*:
   - The target system of RUN_SCRIPT_ON must support `mktemp` command
 
 ### Example
