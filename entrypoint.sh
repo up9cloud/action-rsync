@@ -10,6 +10,76 @@ function die() {
 	echo [action-rsync] "$@" 1>&2
 	exit 1
 }
+function setup_keys() {
+	local prefix="$1"
+	K_VERBOSE="\$${prefix}VERBOSE"
+	K_MODE="\$${prefix}MODE"
+	K_HOST="\$${prefix}HOST"
+	K_TARGET="\$${prefix}TARGET"
+	K_KEY="\$${prefix}KEY"
+	K_USER="\$${prefix}USER"
+	K_PORT="\$${prefix}PORT"
+	K_SOURCE="\$${prefix}SOURCE"
+	K_ARGS="\$${prefix}ARGS"
+	K_ARGS_MORE="\$${prefix}ARGS_MORE"
+	K_SSH_ARGS="\$${prefix}SSH_ARGS"
+	K_RUN_SCRIPT_ON="\$${prefix}RUN_SCRIPT_ON"
+	K_PRE_SCRIPT="\$${prefix}PRE_SCRIPT"
+	K_POST_SCRIPT="\$${prefix}POST_SCRIPT"
+}
+# Defaults
+setup_keys
+
+# Drone CI
+if [ -n "$PLUGIN_VERBOSE" ]; then
+	VERBOSE="$PLUGIN_VERBOSE"
+fi
+if [ -n "$PLUGIN_MODE" ]; then
+	MODE="$PLUGIN_MODE"
+fi
+if [ -n "$PLUGIN_HOST" ]; then
+	HOST="$PLUGIN_HOST"
+fi
+if [ -n "$PLUGIN_TARGET" ]; then
+	TARGET="$PLUGIN_TARGET"
+	# Because $TARGET must be set, so we set keys here
+	setup_keys "PLUGIN_"
+fi
+if [ -n "$PLUGIN_KEY" ]; then
+	KEY="$PLUGIN_KEY"
+fi
+if [ -n "$PLUGIN_USER" ]; then
+	USER="$PLUGIN_USER"
+fi
+if [ -n "$PLUGIN_PORT" ]; then
+	PORT="$PLUGIN_PORT"
+fi
+if [ -n "$PLUGIN_SOURCE" ]; then
+	SOURCE="$PLUGIN_SOURCE"
+fi
+if [ -n "$PLUGIN_ARGS" ]; then
+	ARGS="$PLUGIN_ARGS"
+fi
+if [ -n "$PLUGIN_ARGS_MORE" ]; then
+	ARGS_MORE="$PLUGIN_ARGS_MORE"
+fi
+if [ -n "$PLUGIN_SSH_ARGS" ]; then
+	SSH_ARGS="$PLUGIN_SSH_ARGS"
+fi
+if [ -n "$PLUGIN_RUN_SCRIPT_ON" ]; then
+	RUN_SCRIPT_ON="$PLUGIN_RUN_SCRIPT_ON"
+fi
+if [ -n "$PLUGIN_PRE_SCRIPT" ]; then
+	PRE_SCRIPT="$PLUGIN_PRE_SCRIPT"
+fi
+if [ -n "$PLUGIN_POST_SCRIPT" ]; then
+	POST_SCRIPT="$PLUGIN_POST_SCRIPT"
+fi
+
+# Github action
+if [ -n "$GITHUB_WORKSPACE" ]; then
+	cd $GITHUB_WORKSPACE
+fi
 
 if [ -z "$VERBOSE" ]; then
 	VERBOSE=false
@@ -23,7 +93,7 @@ else
 	case "$MODE" in
 	push | pull | local) ;;
 	*)
-		die "Invalid \$MODE. Must be one of [push, pull, local]"
+		die "Invalid $K_MODE. Must be one of [push, pull, local]"
 		;;
 	esac
 fi
@@ -31,19 +101,19 @@ fi
 if [ -z "$HOST" ]; then
 	case "$MODE" in
 	push | pull)
-		die "Must specify \$HOST! (Remote host)"
+		die "Must specify $K_HOST! (Remote host)"
 		;;
 	esac
 fi
 
 if [ -z "$TARGET" ]; then
-	die "Must specify \$TARGET! (Target folder or file. If you set it as a file, must set \$SOURCE as file too.)"
+	die "Must specify $K_TARGET! (Target folder or file. If you set it as a file, must set $K_SOURCE as file too.)"
 fi
 
 if [ -z "$KEY" ]; then
 	case "$MODE" in
 	push | pull)
-		die "Must provide \$KEY! (ssh private key)"
+		die "Must provide $K_KEY! (ssh private key)"
 		;;
 	esac
 fi
@@ -52,7 +122,7 @@ if [ -z "$USER" ]; then
 	USER="root"
 	case "$MODE" in
 	push | pull)
-		log "\$USER not specified, using default: '$USER'."
+		log "$K_USER not specified, using default: '$USER'."
 		;;
 	esac
 fi
@@ -61,39 +131,39 @@ if [ -z "$PORT" ]; then
 	PORT="22"
 	case "$MODE" in
 	push | pull)
-		log "\$PORT not specified, using default: $PORT."
+		log "$K_PORT not specified, using default: $PORT."
 		;;
 	esac
 fi
 
 if [ -z "$SOURCE" ]; then
 	SOURCE="./"
-	log "\$SOURCE not specified, using default folder: '$SOURCE'."
+	log "$K_SOURCE not specified, using default folder: '$SOURCE'."
 fi
 
 if [ -z "$ARGS" ]; then
 	ARGS="-azv --delete --exclude=/.git/ --exclude=/.github/"
-	log "\$ARGS not specified, using default rsync arguments: '$ARGS'."
+	log "$K_ARGS not specified, using default rsync arguments: '$ARGS'."
 fi
 
 if [ ! -z "$ARGS_MORE" ]; then
-	log "\$ARGS_MORE specified, will append to \$ARGS."
+	log "$K_ARGS_MORE specified, will append to $K_ARGS."
 fi
 
 if [ -z "$SSH_ARGS" ]; then
 	SSH_ARGS="-p $PORT -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=quiet"
 	case "$MODE" in
 	push | pull)
-		log "\$SSH_ARGS not specified, using default: '$SSH_ARGS'."
+		log "$K_SSH_ARGS not specified, using default: '$SSH_ARGS'."
 		;;
 	esac
 else
-	log "You spcified \$SSH_ARGS, so \$PORT will be ignored."
+	log "You spcified $K_SSH_ARGS, so $K_PORT will be ignored."
 fi
 
 if [ -z "$RUN_SCRIPT_ON" ]; then
 	RUN_SCRIPT_ON=target
-	log "\$RUN_SCRIPT_ON not specified, using default: '$RUN_SCRIPT_ON'"
+	log "$K_RUN_SCRIPT_ON not specified, using default: '$RUN_SCRIPT_ON'"
 else
 	RUN_SCRIPT_ON=$(echo "$RUN_SCRIPT_ON" | tr '[:upper:]' '[:lower:]')
 fi
@@ -105,7 +175,7 @@ local)
 remote)
 	REAL_RUN_SCRIPT_ON="$RUN_SCRIPT_ON"
 	if [ "$MODE" == "local" ]; then
-		die "It's meaningless, you want run scripts on remote but \$MODE is local?"
+		die "It's meaningless, you want run scripts on remote but $K_MODE is local?"
 	fi
 	;;
 source)
@@ -127,7 +197,7 @@ target)
 	fi
 	;;
 *)
-	die "Invalid \$RUN_SCRIPT_ON, must be one of [local, remote, source, target]"
+	die "Invalid $K_RUN_SCRIPT_ON, must be one of [local, remote, source, target]"
 	;;
 esac
 
@@ -139,10 +209,6 @@ push | pull)
 	chmod 600 "$HOME/.ssh/key"
 	;;
 esac
-
-if [ -n "$GITHUB_WORKSPACE" ]; then
-	cd $GITHUB_WORKSPACE
-fi
 
 cmd_ssh=$(printf "ssh -i %s %s" "$HOME/.ssh/key" "$SSH_ARGS")
 case "$MODE" in

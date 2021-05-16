@@ -6,7 +6,7 @@
 
 ## Quick start
 
-> Github action
+> Github action (.github/workflows/*.yml)
 
 ```yml
 on: [push]
@@ -24,6 +24,27 @@ jobs:
           TARGET: /app/
 ```
 
+> Drone CI (.drone.yml)
+
+```yml
+kind: pipeline
+type: docker
+name: default
+
+steps:
+  - name: deploy
+    when:
+      branch:
+        - master
+      event: [push]
+    image: sstc/drone-rsync
+    settings:
+      key:
+        from_secret: deploy_ssh_key
+      host: target.example.com
+      target: /app/
+```
+
 > Docker
 
 ```bash
@@ -33,6 +54,15 @@ docker run -it --rm \
   -e HOST="target.example.com" \
   -e KEY="$(cat ~/.ssh/id_rsa)"
   -e TARGET="/app/" \
+  sstc/action-rsync
+
+# Or aliases with prefix PLUGIN_, based on drone ci envs
+docker run -it --rm \
+  -v $(pwd):/app \
+  -w /app \
+  -e PLUGIN_HOST="target.example.com" \
+  -e PLUGIN_KEY="$(cat ~/.ssh/id_rsa)"
+  -e PLUGIN_TARGET="/app/" \
   sstc/action-rsync
 ```
 
