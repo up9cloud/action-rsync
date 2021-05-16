@@ -37,8 +37,9 @@ steps:
       branch:
         - master
       event: [push]
-    image: sstc/drone-rsync
+    image: sstc/action-rsync
     settings:
+      # lowercase attributes: https://readme.drone.io/plugins/overview/#plugin-inputs
       key:
         from_secret: deploy_ssh_key
       host: target.example.com
