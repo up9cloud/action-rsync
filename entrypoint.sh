@@ -205,7 +205,7 @@ esac
 case "$MODE" in
 push | pull)
 	mkdir -p "$HOME/.ssh"
-	echo "$KEY" >"$HOME/.ssh/key"
+	echo "$KEY" | tr -d '\r' >"$HOME/.ssh/key"
 	chmod 600 "$HOME/.ssh/key"
 	;;
 esac
