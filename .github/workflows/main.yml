@@ -21,6 +21,20 @@ jobs:
           POST_SCRIPT: "ls /tmp/action-rsync_push && date -u"
       - uses: up9cloud/action-rsync@master
         name: |
+          Mode: push, local (SOURCE) to remote (TARGET), ssh login by PASSWORD
+        env:
+          HOST: ${{secrets.DEPLOY_HOST}}
+          USER: ${{secrets.DEPLOY_USER}}
+          PASSWORD: ${{secrets.DEPLOY_SSH_PASSWORD}}
+          SOURCE: /root/.profile
+          TARGET: /tmp/.profile
+          VERBOSE: true
+          SSH_ARGS: "-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=verbose"
+          PRE_SCRIPT: |
+            date -u
+          POST_SCRIPT: "pwd && date -u"
+      - uses: up9cloud/action-rsync@master
+        name: |
           Mode: push, local (SOURCE) to remote (TARGET), run scripts at local (SOURCE)
         env:
           HOST: ${{secrets.DEPLOY_HOST}}
@@ -78,19 +92,6 @@ jobs:
             fi
             date -u
           POST_SCRIPT: "ls /tmp/action-rsync_local && date -u"
-      - uses: up9cloud/action-rsync@master
-        name: |
-          Mode: push, local (SOURCE) to remote (TARGET), ssh login by PASSWORD
-        env:
-          HOST: ${{secrets.DEPLOY_HOST}}
-          USER: ${{secrets.DEPLOY_USER}}
-          PASSWORD: ${{secrets.DEPLOY_SSH_PASSWORD}}
-          SOURCE: /root/.profile
-          TARGET: /tmp/.profile
-          VERBOSE: true
-          PRE_SCRIPT: |
-            date -u
-          POST_SCRIPT: "pwd && date -u"
       - name: Push to Docker Hub
         uses: docker/build-push-action@v1
         if: ${{ github.event_name == 'push' && success() }}
