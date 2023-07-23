@@ -26,10 +26,8 @@ jobs:
           HOST: ${{secrets.DEPLOY_HOST}}
           USER: ${{secrets.DEPLOY_SSH_USER}}
           PASSWORD: ${{secrets.DEPLOY_SSH_PASSWORD}}
-          SOURCE: /root/.profile
-          TARGET: /tmp/.profile
+          TARGET: /tmp/action-rsync_push_via_ssh_password/
           VERBOSE: true
-          SSH_ARGS: "-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -o LogLevel=verbose"
           PRE_SCRIPT: |
             date -u
           POST_SCRIPT: "pwd && date -u"
