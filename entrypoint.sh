@@ -226,7 +226,11 @@ fi
 
 case "$MODE" in
 push | pull)
-	cmd_rsync=$(printf "rsync %s %s -e '%s'" "$ARGS" "$ARGS_MORE" "$cmd_ssh")
+	if [ -n "$KEY" ]; then
+		cmd_rsync=$(printf "rsync %s %s -e '%s'" "$ARGS" "$ARGS_MORE" "$cmd_ssh")
+	elif [ -n "$PASSWORD" ]; then
+		cmd_rsync=$(printf "sshpass -e rsync %s %s -e 'ssh %s'" "$ARGS" "$ARGS_MORE" "$SSH_ARGS")
+	fi
 	;;
 local)
 	cmd_rsync=$(printf "rsync %s %s" "$ARGS" "$ARGS_MORE")
@@ -237,7 +241,11 @@ local)
 	cmd_rsync_script=$(printf "rsync -av")
 	;;
 remote)
-	cmd_rsync_script=$(printf "rsync -avz -e '%s'" "$cmd_ssh")
+	if [ -n "$KEY" ]; then
+		cmd_rsync_script=$(printf "rsync -avz -e '%s'" "$cmd_ssh")
+	elif [ -n "$PASSWORD" ]; then
+		cmd_rsync_script=$(printf "sshpass -e rsync -avz -e 'ssh %s'" "$SSH_ARGS")
+	fi
 	;;
 esac
 

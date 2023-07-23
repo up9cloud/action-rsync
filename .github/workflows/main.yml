@@ -88,6 +88,9 @@ jobs:
           SOURCE: /root/.profile
           TARGET: /tmp/.profile
           VERBOSE: true
+          PRE_SCRIPT: |
+            date -u
+          POST_SCRIPT: "pwd && date -u"
       - name: Push to Docker Hub
         uses: docker/build-push-action@v1
         if: ${{ github.event_name == 'push' && success() }}
