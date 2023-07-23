@@ -24,7 +24,7 @@ jobs:
           Mode: push, local (SOURCE) to remote (TARGET), ssh login by PASSWORD
         env:
           HOST: ${{secrets.DEPLOY_HOST}}
-          USER: ${{secrets.DEPLOY_USER}}
+          USER: ${{secrets.DEPLOY_SSH_USER}}
           PASSWORD: ${{secrets.DEPLOY_SSH_PASSWORD}}
           SOURCE: /root/.profile
           TARGET: /tmp/.profile
