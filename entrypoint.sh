@@ -2,7 +2,7 @@
 set -e
 
 function log() {
-	if [ "$VERBOSE" == "true" ]; then
+	if [ "$VERBOSE" = "true" ]; then
 		echo [action-rsync] "$@"
 	fi
 }
@@ -17,6 +17,7 @@ function setup_keys() {
 	K_HOST="\$${prefix}HOST"
 	K_TARGET="\$${prefix}TARGET"
 	K_KEY="\$${prefix}KEY"
+	K_PASSWORD="\$${prefix}PASSWORD"
 	K_USER="\$${prefix}USER"
 	K_PORT="\$${prefix}PORT"
 	K_SOURCE="\$${prefix}SOURCE"
@@ -47,6 +48,9 @@ if [ -n "$PLUGIN_TARGET" ]; then
 fi
 if [ -n "$PLUGIN_KEY" ]; then
 	KEY="$PLUGIN_KEY"
+fi
+if [ -n "$PLUGIN_PASSWORD" ]; then
+	PASSWORD="$PLUGIN_PASSWORD"
 fi
 if [ -n "$PLUGIN_USER" ]; then
 	USER="$PLUGIN_USER"
@@ -111,11 +115,15 @@ if [ -z "$TARGET" ]; then
 fi
 
 if [ -z "$KEY" ]; then
-	case "$MODE" in
-	push | pull)
-		die "Must provide $K_KEY! (ssh private key)"
-		;;
-	esac
+	if [ -z "$PASSWORD" ]; then
+		case "$MODE" in
+		push | pull)
+			die "Must provide either $K_KEY or $K_PASSWORD! (ssh private key or ssh password)"
+			;;
+		esac
+	else
+		log "Using $K_PASSWORD is less secure, please consider using $K_KEY instead."
+	fi
 fi
 
 if [ -z "$USER" ]; then
@@ -202,15 +210,20 @@ target)
 esac
 
 # Prepare
-case "$MODE" in
-push | pull)
-	mkdir -p "$HOME/.ssh"
-	echo "$KEY" | tr -d '\r' >"$HOME/.ssh/key"
-	chmod 600 "$HOME/.ssh/key"
-	;;
-esac
+if [ -n "$KEY" ]; then
+	case "$MODE" in
+	push | pull)
+		mkdir -p "$HOME/.ssh"
+		echo "$KEY" | tr -d '\r' >"$HOME/.ssh/key"
+		chmod 600 "$HOME/.ssh/key"
+		;;
+	esac
+	cmd_ssh=$(printf "ssh -i %s %s" "$HOME/.ssh/key" "$SSH_ARGS")
+elif [ -n "$PASSWORD" ]; then
+	export SSHPASS="$PASSWORD"
+	cmd_ssh=$(printf "sshpass -e ssh %s" "$SSH_ARGS")
+fi
 
-cmd_ssh=$(printf "ssh -i %s %s" "$HOME/.ssh/key" "$SSH_ARGS")
 case "$MODE" in
 push | pull)
 	cmd_rsync=$(printf "rsync %s %s -e '%s'" "$ARGS" "$ARGS_MORE" "$cmd_ssh")

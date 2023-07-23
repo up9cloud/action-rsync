@@ -78,6 +78,16 @@ jobs:
             fi
             date -u
           POST_SCRIPT: "ls /tmp/action-rsync_local && date -u"
+      - uses: up9cloud/action-rsync@master
+        name: |
+          Mode: push, local (SOURCE) to remote (TARGET), ssh login by PASSWORD
+        env:
+          HOST: ${{secrets.DEPLOY_HOST}}
+          USER: ${{secrets.DEPLOY_USER}}
+          PASSWORD: ${{secrets.DEPLOY_SSH_PASSWORD}}
+          SOURCE: /root/.profile
+          TARGET: /tmp/.profile
+          VERBOSE: true
       - name: Push to Docker Hub
         uses: docker/build-push-action@v1
         if: ${{ github.event_name == 'push' && success() }}

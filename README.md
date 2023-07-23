@@ -78,7 +78,9 @@ docker run -it --rm \
   - *Default value*: `22`
   - It's useless when MODE is local
 - **`KEY`**: The ssh private key
-  - **Required if** MODE is `push` or `pull`
+  - **Required if** PASSWORD is not provided and MODE is `push` or `pull`
+- **`PASSWORD`**: The ssh password
+  - **Required if** KEY is not provided and MODE is `push` or `pull`
 - **`SOURCE`**: Source path for folder or file
   - *Default value*: `./`
 - **`TARGET`**: Target path for folder or file
@@ -129,6 +131,7 @@ jobs:
       env:
         HOST: example.com
         KEY: ${{secrets.DEPLOY_SSH_KEY}}
+        # PASSWORD: ${{secrets.DEPLOY_SSH_PASSWORD}} # it's less secure, using KEY instead
         TARGET: /app/hello-service/
 
         VERBOSE: true
