@@ -113,9 +113,11 @@ jobs:
         SOURCE: ./public/
 
         PRE_SCRIPT: |
-          echo start at:
+          echo "start at:"
           date -u
-        POST_SCRIPT: "echo done at: && date -u"
+        POST_SCRIPT: |
+          echo "done at:"
+          date -u
 ```
 
 See also: [.github/workflows/main.yml](https://github.com/up9cloud/action-rsync/blob/master/.github/workflows/main.yml)
